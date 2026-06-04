@@ -1,0 +1,13 @@
+{
+  "predictions": {
+    "538007": {
+      "predictions": {
+        "749632774905790474": {
+          "outcome": "AWAY",
+          "timestamp": "2026-01-18T00:39:56.166026Z"
+        }
+      }
+    }
+  },
+  "version": 1
+}
