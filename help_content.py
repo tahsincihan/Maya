@@ -11,6 +11,13 @@ HELP_DETAILS = {
     "mypicks": "Shows your saved picks and match status.",
     "leaderboard": "Scores only finished matches (2 pts per correct outcome).",
     "results": "Shows latest matchweek results and fixtures.",
+    "join": "Bot joins whichever voice channel you're currently in.",
+    "leave": "Bot disconnects from the voice channel.",
+    "hi_maya": "Say hi and Maya will greet you back.",
+    "whatsup_maya": "Maya flirts with you and spills some server gossip.",
+    "allabout": "Get all facts about a mentioned user. Usage: !allabout @user",
+    "fact": "Get a single random fact about a mentioned user. Usage: !fact @user",
+    "flirtwith": "Maya flirts with the mentioned user. Usage: !flirtwith @user",
 }
 
 HELP_EXAMPLES = {

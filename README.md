@@ -1,6 +1,6 @@
-# Discord Role Counter Bot
+# Maya - Discord Bot
 
-A Discord bot that counts members with specific roles and provides role statistics.
+Maya counts members with specific roles, provides role statistics, and manages football predictions.
 
 ## Features
 
@@ -16,6 +16,10 @@ A Discord bot that counts members with specific roles and provides role statisti
 - **!predict <match_id> <home|away|draw>** (alias: `!plpredict`) - Predict a match outcome
 - **!mypicks** (aliases: `!plmypicks`, `!plpicks`) - Show your prediction picks
 - **!leaderboard** (alias: `!plleaderboard`) - Prediction leaderboard (2 pts per correct outcome)
+- **!join** / **!leave** - Join or leave your current voice channel
+- **!allabout @user** / **!fact @user** - Fun, randomly generated facts about a member
+- **!flirtwith @user** - Maya flirts with the mentioned user
+- Automatic welcome message when a new member joins
 
 ## Setup Instructions
 
@@ -68,13 +72,13 @@ pip install -r requirements.txt
 ### 5. Run the Bot
 
 ```bash
-python role_counter_bot.py
+python maya_bot.py
 ```
 
 Or if you want to run it in the background:
 
 ```bash
-nohup python role_counter_bot.py &
+nohup python maya_bot.py &
 ```
 
 ## Usage Examples
@@ -154,3 +158,7 @@ Consider using:
 - **PM2** for Node.js-style process management
 - **Docker** for containerized deployment
 - **Railway/Heroku** for cloud hosting
+
+## License
+
+MIT License — see [LICENSE](LICENSE).

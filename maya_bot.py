@@ -21,23 +21,27 @@ from cogs.help import HelpCog
 from cogs.predictions import PredictionsCog
 from cogs.roles import RolesCog
 from cogs.voice import VoiceCog
+from cogs.welcome import WelcomeCog
+from keep_alive import keep_alive
 
 # Bot setup with necessary intents
 intents = discord.Intents.default()
 intents.members = True
 intents.message_content = True
 intents.voice_states = True
+intents.presences = True
 
-class RoleCounterBot(commands.Bot):
+class MayaBot(commands.Bot):
     async def setup_hook(self) -> None:
         await self.add_cog(HelpCog(self))
         await self.add_cog(RolesCog(self))
         await self.add_cog(FootballCog(self))
         await self.add_cog(PredictionsCog(self))
         await self.add_cog(VoiceCog(self))
+        await self.add_cog(WelcomeCog(self))
 
 
-bot = RoleCounterBot(command_prefix="!", intents=intents, help_command=None)
+bot = MayaBot(command_prefix="!", intents=intents, help_command=None)
 
 
 log = logging.getLogger(__name__)
@@ -65,4 +69,6 @@ if __name__ == "__main__":
         print("ERROR: DISCORD_BOT_TOKEN environment variable not set!")
         print("Please set your bot token before running.")
     else:
+        # Start keep-alive web server for hosting
+        keep_alive()
         bot.run(token)

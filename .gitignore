@@ -16,3 +16,8 @@ venv/
 
 # OS
 .DS_Store
+
+# Local deployment notes / runtime data
+deployment_guide.md
+predictions.json
+pl_predictions.json

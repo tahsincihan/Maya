@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Discord bot that counts members with specific roles and provides role statistics. It uses discord.py with the commands extension and requires specific Discord Gateway Intents (Server Members Intent and Message Content Intent) to function.
+Maya is a Discord bot built with discord.py. It counts members with specific roles, reports role statistics, tracks football (soccer) fixtures/results/predictions via the football-data.org API, provides voice-channel utilities, and posts welcome messages for new members. It requires the **Server Members**, **Message Content**, and **Voice State** Discord Gateway Intents to function.
 
 ## Running the Bot
 
@@ -12,37 +12,39 @@ This is a Discord bot that counts members with specific roles and provides role 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the bot (requires DISCORD_BOT_TOKEN environment variable)
-python role_counter_bot.py
+# Run the bot (requires DISCORD_BOT_TOKEN environment variable, set via .env)
+python maya_bot.py
 ```
 
-The bot reads the Discord token from the `DISCORD_BOT_TOKEN` environment variable, which should be set in a `.env` file (not committed to git).
+The bot reads secrets from environment variables loaded via `python-dotenv` from a `.env` file (not committed to git; see `.env.example` for the expected keys). `FOOTBALL_DATA_TOKEN` is optional and only needed for the fixtures/results/predictions commands.
 
 ## Architecture
 
-**Single-file architecture**: All bot logic is in `role_counter_bot.py` (230 lines)
+The entry point `maya_bot.py` builds the `commands.Bot` instance, configures intents/logging, starts the Flask keep-alive server (`keep_alive.py`, for free-tier hosts that need an HTTP port to stay awake), and registers cogs from `cogs/`:
 
-**Bot Commands** (prefix: `!`):
-- `!teamstats` - Shows member counts for hardcoded football team roles
-- `!rolecount <role_name>` - Counts members with a specific role
-- `!allroles` - Lists all server roles with member counts (sorted, max 25 shown)
-- `!multirolecount "Role 1" "Role 2"` - Counts multiple roles at once
-- `!rolesearch <keyword>` - Searches for roles containing a keyword
+- `cogs/roles.py` — `RolesCog`: `!teamstats`, `!rolecount`, `!allroles`, `!multirolecount`, `!rolesearch`
+- `cogs/football.py` — `FootballCog`: `!results`/`!plweek`, `!myteam`/`!myfixtures`/`!mygames`, `!fixtures`/`!plfixtures` (calls the football-data.org API)
+- `cogs/predictions.py` — `PredictionsCog`: `!predict`/`!plpredict`, `!mypicks`, `!leaderboard`; persists picks via `predictions_store.py` to `predictions.json` (gitignored — runtime state, not tracked)
+- `cogs/voice.py` — `VoiceCog`: voice channel join/leave and the flirty "fun facts about a member" commands
+- `cogs/welcome.py` — `WelcomeCog`: greets new members on join
+- `cogs/help.py` — `HelpCog`: `!helpmaya`, backed by `help_content.py`
+
+Shared config (football team list, competition codes/aliases, file paths) lives in `config.py`. Shared formatting/lookup helpers live in `helpers.py`.
 
 **Key Technical Details**:
-- Uses Discord Intents: `intents.members = True` and `intents.message_content = True` (both required)
-- Hardcoded football team list in `FOOTBALL_TEAMS` constant (lines 13-24)
+- Intents required: `members`, `message_content`, `voice_states`, `presences`
 - Role lookups are case-sensitive using `discord.utils.get()`
 - Responses use Discord embeds for formatting
-- Error handling for missing arguments and command errors (lines 221-228)
+- Command errors are handled centrally in `maya_bot.py`'s `on_command_error`
+- Logs go to stdout and `bot.log` (gitignored)
 
 ## Configuration
 
-The `FOOTBALL_TEAMS` list is hardcoded in the bot. To add/remove teams, modify lines 13-24 in `role_counter_bot.py`.
+The `FOOTBALL_TEAMS` list, competition codes/aliases, and predictions file paths are in `config.py`. To add/remove supported teams, edit that list.
 
 ## Discord Setup Requirements
 
 When testing or deploying, ensure the Discord bot application has:
 1. **Server Members Intent** enabled in Discord Developer Portal
 2. **Message Content Intent** enabled in Discord Developer Portal
-3. Bot permissions: Read Messages/View Channels, Send Messages, Embed Links
+3. Bot permissions: Read Messages/View Channels, Send Messages, Embed Links, Connect/Speak (for voice commands)
