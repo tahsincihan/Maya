@@ -19,6 +19,18 @@ Maya counts members with specific roles, provides role statistics, and manages f
 - **!join** / **!leave** - Join or leave your current voice channel
 - **!allabout @user** / **!fact @user** - Fun, randomly generated facts about a member
 - **!flirtwith @user** - Maya flirts with the mentioned user
+- **!lovetest @a [@b]** (aliases: `!ship`, `!love`) - Compatibility % with a flirty verdict and the reasons why (shared roles, custom status, recent chat, profiles, activity, join dates)
+- **!banter [team]** - Maya teases fans of the next upcoming game involving a team from the server
+- **!league** (aliases: `!boys`, `!supporters`, `!fanleague`) - Me & The Boys League: members ranked by their team's real league results this season (win 3, draw 1, loss 0)
+- **!leaguetable [#channel | refresh | off]** (alias: `!leaguechannel`) - (Manage Server) Maya posts a pinned league table and edits it after every matchday, with a short recap; its buttons keep working after restarts and open a private copy for whoever clicks
+- **!match [@person]** (aliases: `!mymatch`, `!findmatch`) - Maya finds the best match in the server, with runners-up
+- **!rizz @person** - A pickup line, personalised from their status, roles, music or game
+- **!date @a [@b]** - Maya plans a date and predicts the chance of a second one
+- **!marry @person** / **!divorce** / **!couples** - Server marriages with Yes/No proposal buttons
+- **!coupleoftheday [#channel | now | off]** - Daily Couple of the Day (admins set the channel)
+- **!confess <message>** - Anonymous confession, best sent in a DM to Maya; admins set the channel with `!confessions #channel` and can check senders with `!whoconfessed <number>`
+- **!secretadmirer @person** / **!noadmirers** - Maya DMs someone that they have a secret admirer, with a hint; people can opt out
+- **!sendto #channel <command>** (alias: `!post`) - (Manage Server) Run a fun command from an admin channel and Maya posts the result in the chosen channel
 - Automatic welcome message when a new member joins
 
 ## Setup Instructions

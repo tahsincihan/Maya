@@ -40,7 +40,12 @@ class PredictionsCog(commands.Cog):
 
         return user.display_name, user
 
-    @commands.command(name="predict", aliases=["plpredict"], help="Predict a match outcome")
+    @commands.command(
+        name="predict",
+        aliases=["plpredict"],
+        help="Predict a match outcome",
+        usage="<match_id> <home|away|draw>",
+    )
     async def predict_match(self, ctx: commands.Context, match_id: int, *prediction: str) -> None:
         """
         Predict a match outcome.

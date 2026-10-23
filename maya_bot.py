@@ -16,8 +16,15 @@ logging.basicConfig(
     ],
 )
 
+from cogs.admin import AdminCog
+from cogs.anonymous import AnonymousCog
+from cogs.flirt import FlirtCog
 from cogs.football import FootballCog
+from cogs.fun import FunCog
 from cogs.help import HelpCog
+from cogs.league import LeagueCog
+from cogs.love import LoveCog
+from cogs.marriage import MarriageCog
 from cogs.predictions import PredictionsCog
 from cogs.roles import RolesCog
 from cogs.voice import VoiceCog
@@ -37,8 +44,15 @@ class MayaBot(commands.Bot):
         await self.add_cog(RolesCog(self))
         await self.add_cog(FootballCog(self))
         await self.add_cog(PredictionsCog(self))
+        await self.add_cog(LeagueCog(self))
+        await self.add_cog(FunCog(self))
+        await self.add_cog(LoveCog(self))
+        await self.add_cog(FlirtCog(self))
+        await self.add_cog(MarriageCog(self))
+        await self.add_cog(AnonymousCog(self))
         await self.add_cog(VoiceCog(self))
         await self.add_cog(WelcomeCog(self))
+        await self.add_cog(AdminCog(self))
 
 
 bot = MayaBot(command_prefix="!", intents=intents, help_command=None)

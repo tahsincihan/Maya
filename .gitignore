@@ -21,4 +21,6 @@ venv/
 deployment_guide.md
 predictions.json
 pl_predictions.json
+league.json
+flirt.json
 CLAUDE.md
