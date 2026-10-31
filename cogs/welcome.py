@@ -21,24 +21,6 @@ _WELCOME_GREETINGS = [
     "omg hi {name}!! 🫶 welcome!! you're gonna love it here i promise",
 ]
 
-_FLIRT_LINES = [
-    "{mention} omg you replied!! 😭💗 okay ngl i'm blushing a little",
-    "aww {mention} said something!! you're actually so cute 👀✨",
-    "okay {mention} not you being this cute and replying too 🫠💗 i'm weak",
-    "{mention} hi hi hi 🩷 honestly you seem really cool and i'm kinda interested now 😏",
-    "omg {mention} you have no idea how happy i am that you replied 🥺💕",
-    "{mention} okay so like you're actually really attractive and i needed to say something 😭✨",
-    "awww {mention} you replied and now i'm trying SO hard to play it cool 🫣💗",
-    "{mention} bestie you're lowkey so cute 👀 i'm not even trying to hide it anymore",
-    "okay {mention} the way you're coming across right now?? so endearing 💕",
-    "{mention} not me actually developing feelings after like 30 seconds 😭🩷",
-    "{mention} hi hi hi 🫶 you seem really interesting and i want to know more about you",
-    "{mention} okay so like you're giving main character energy and i'm absolutely here for it 💅",
-    "omg {mention} you replied and i'm literally trying not to smile like an idiot rn 🥺💕",
-    "{mention} you're actually really cool and i'm kinda smitten already 😏✨",
-    "{mention} bestie the confidence you have just casually replying?? 🔥 i'm obsessed",
-]
-
 _GOODBYE_MESSAGES = [
     "oh wow {name} actually left 💀 nobody cares btw",
     "bye {name} 👋 don't let the door hit you on the way out",
@@ -55,7 +37,6 @@ _GOODBYE_MESSAGES = [
 class WelcomeCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
-        self._pending: dict[int, discord.TextChannel] = {}
 
     def _get_welcome_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
         target_name = "ajira-chat"
@@ -96,26 +77,7 @@ class WelcomeCog(commands.Cog):
 
         greeting = random.choice(_WELCOME_GREETINGS).format(name=member.mention)
         await channel.send(greeting)
-        self._pending[member.id] = channel
         log.info(f"Greeted {member.name} in {channel.name}")
-
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
-        if message.author.bot or message.guild is None:
-            return
-
-        channel = self._pending.get(message.author.id)
-        if channel is None:
-            return
-
-        if message.channel.id != channel.id:
-            return
-
-        del self._pending[message.author.id]
-
-        flirt = random.choice(_FLIRT_LINES).format(mention=message.author.mention)
-        await channel.send(flirt)
-        log.info(f"Flirted with {message.author.name} after their reply")
 
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member) -> None:
