@@ -1,0 +1,18 @@
+[Unit]
+Description=Maya Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USER__
+WorkingDirectory=__DIR__
+ExecStart=__DIR__/.venv/bin/python maya_bot.py
+Restart=always
+RestartSec=10
+Environment=PYTHONUNBUFFERED=1
+# The VM never sleeps, so the web keep-alive server isn't needed.
+Environment=KEEP_ALIVE=0
+
+[Install]
+WantedBy=multi-user.target

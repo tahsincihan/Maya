@@ -163,13 +163,9 @@ Or specify a league and matchweek:
 - Add `.env` to `.gitignore` if using version control
 - Use environment variables for production deployments
 
-## For Production
+## Hosting 24/7
 
-Consider using:
-- **systemd** for Linux servers to auto-restart
-- **PM2** for Node.js-style process management
-- **Docker** for containerized deployment
-- **Railway/Heroku** for cloud hosting
+Maya runs on a free Oracle Cloud VM as a systemd service. See [deploy/ORACLE.md](deploy/ORACLE.md). After the first setup, `deploy/push_to_server.sh ubuntu@<vm-ip> <ssh-key>` sends code updates to the server and restarts Maya.
 
 ## License
 

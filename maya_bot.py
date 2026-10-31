@@ -83,6 +83,7 @@ if __name__ == "__main__":
         print("ERROR: DISCORD_BOT_TOKEN environment variable not set!")
         print("Please set your bot token before running.")
     else:
-        # Start keep-alive web server for hosting
-        keep_alive()
+        # Web keep-alive server for free hosts that sleep. Set KEEP_ALIVE=0 to skip it.
+        if os.getenv("KEEP_ALIVE", "1") != "0":
+            keep_alive()
         bot.run(token)
