@@ -21,18 +21,6 @@ _WELCOME_GREETINGS = [
     "omg hi {name}!! 🫶 welcome!! you're gonna love it here i promise",
 ]
 
-_GOODBYE_MESSAGES = [
-    "oh wow {name} actually left 💀 nobody cares btw",
-    "bye {name} 👋 don't let the door hit you on the way out",
-    "goodbye {name} 💋 try not to think about us too much",
-    "so {name} decided to leave 🍿 anyway",
-    "{name} just dipped and bro thought I won't notice lmaooo",
-    "aww {name} thought they were important enough to announce their departure 😭",
-    "and {name} is finally gone 🎉",
-    "goodbye {name} 👋 thanks for the memories nobody asked for",
-    "{name} 🚪 left, such a B****",
-]
-
 
 class WelcomeCog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
@@ -45,15 +33,6 @@ class WelcomeCog(commands.Cog):
                 log.info(f"Found welcome channel: {channel.name} (ID: {channel.id})")
                 return channel
         log.warning(f"Welcome channel not found in {guild.name}. Available channels: {[c.name for c in guild.text_channels]}")
-        return None
-
-    def _get_goodbye_channel(self, guild: discord.Guild) -> discord.TextChannel | None:
-        target_name = "𝕎𝔼𝕃ℂ𝕆𝕄𝔼"
-        for channel in guild.text_channels:
-            if target_name in channel.name:
-                log.info(f"Found goodbye channel: {channel.name} (ID: {channel.id})")
-                return channel
-        log.warning(f"Goodbye channel not found in {guild.name}")
         return None
 
     @commands.Cog.listener()
@@ -78,17 +57,3 @@ class WelcomeCog(commands.Cog):
         greeting = random.choice(_WELCOME_GREETINGS).format(name=member.mention)
         await channel.send(greeting)
         log.info(f"Greeted {member.name} in {channel.name}")
-
-    @commands.Cog.listener()
-    async def on_member_remove(self, member: discord.Member) -> None:
-        if member.bot:
-            return
-
-        channel = self._get_goodbye_channel(member.guild)
-        if channel is None:
-            log.warning(f"No goodbye channel found for {member.guild.name}")
-            return
-
-        goodbye = random.choice(_GOODBYE_MESSAGES).format(name=member.display_name)
-        await channel.send(goodbye)
-        log.info(f"Sent goodbye message for {member.name} in {channel.name}")
