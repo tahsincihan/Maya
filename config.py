@@ -9,6 +9,7 @@ FOOTBALL_TEAMS = [
     "Man City",
     "Chelsea",
     "PSG",
+    "Atlético Madrid",
 ]
 
 FOOTBALL_DATA_BASE_URL = "https://api.football-data.org/v4"
@@ -46,6 +47,8 @@ TEAM_NAME_MAP = {
     "Arsenal FC": "Arsenal",
     "Chelsea FC": "Chelsea",
     "FC Bayern München": "Bayern Munich",
+    "Club Atlético de Madrid": "Atlético Madrid",
+    "Atleti": "Atlético Madrid",
 }
 
 # Commands admins can run in another channel with !sendto (by their main name).

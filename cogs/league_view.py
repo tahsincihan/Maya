@@ -1,17 +1,14 @@
 """How the Me & The Boys League looks in Discord: tables, pages, buttons and the team menu."""
 
+import itertools
 import math
-import unicodedata
 
 import discord
 
 from config import LEAGUE_NAME
 
-PAGE_SIZE = 10
-NAME_WIDTH = 10
-TEAM_WIDTH = 11
+PAGE_SIZE = 20
 MEDALS = ["🥇", "🥈", "🥉"]
-SHORT_TEAM_NAMES = {"Bayern Munich": "Bayern"}
 RULES = "Win 3 · Draw 1 · Loss 0"
 
 
@@ -19,29 +16,13 @@ def points(record: dict) -> int:
     return record["won"] * 3 + record["draw"]
 
 
-def _fit(text: str, width: int) -> str:
-    """Trim text to a fixed width, dropping emoji and wide characters so the table stays aligned."""
-    text = SHORT_TEAM_NAMES.get(text, text)
-    clean = "".join(
-        ch for ch in unicodedata.normalize("NFKC", text)
-        if ch.isprintable()
-        and not unicodedata.combining(ch)
-        and unicodedata.category(ch) != "So"
-        and unicodedata.east_asian_width(ch) not in ("W", "F")
-        and ord(ch) <= 0xFFFF
-    )
-    clean = " ".join(clean.replace("`", "'").split())
-    if not clean:
-        return ""
-    return clean if len(clean) <= width else clean[: width - 1] + "…"
+def _rank(position: int) -> str:
+    """Medal for the top 3, a small number for everyone else."""
+    return MEDALS[position - 1] if position <= len(MEDALS) else f"`{position}`"
 
 
-def _fan_name(member: discord.Member) -> str:
-    """Nickname if it can be shown in the table, else their username."""
-    for name in (member.display_name, getattr(member, "global_name", None), getattr(member, "name", None)):
-        if name and len(_fit(name, NAME_WIDTH)) >= 2:
-            return _fit(name, NAME_WIDTH)
-    return "?"
+def _plural(count: int, word: str) -> str:
+    return f"{count} {word}{'s' if count != 1 else ''}"
 
 
 class LeagueData:
@@ -67,18 +48,6 @@ class LeagueData:
         return next(pos for pos, _, t, _ in self.ranked if t == team)
 
 
-def _podium(data: LeagueData) -> str:
-    """Top 3 teams with their fans."""
-    lines = []
-    for medal, team in zip(MEDALS, data.teams):
-        fans = data.fans[team]
-        names = ", ".join(m.mention for m in fans[:4])
-        if len(fans) > 4:
-            names += f" +{len(fans) - 4} more"
-        lines.append(f"{medal} **{team}** · {points(data.records[team])} pts · {names}")
-    return "\n".join(lines)
-
-
 def teams_embed(
     data: LeagueData,
     viewer_id: int | None = None,
@@ -86,53 +55,42 @@ def teams_embed(
     recap: list[str] | None = None,
 ) -> discord.Embed:
     my_teams = {team for _, (_, _, team, _) in data.rows_for(viewer_id)} if viewer_id else set()
-    header = f" {'#':>2} {'Team':<{TEAM_WIDTH}} {'P':>2} {'W':>2} {'D':>2} {'L':>2} {'Pts':>3} {'Fans':>4}"
-    lines = [header, "─" * len(header)]
+    lines = []
     for i, team in enumerate(data.teams, 1):
         r = data.records[team]
-        mark = ">" if team in my_teams else " "
+        you = " 💛" if team in my_teams else ""
         lines.append(
-            f"{mark}{i:>2} {_fit(team, TEAM_WIDTH):<{TEAM_WIDTH}} "
-            f"{r['played']:>2} {r['won']:>2} {r['draw']:>2} {r['lost']:>2} {points(r):>3} {len(data.fans[team]):>4}"
+            f"{_rank(i)} **{team}** · **{points(r)} pts**{you}\n"
+            f"-# {r['won']}W {r['draw']}D {r['lost']}L · {r['played']} played · {_plural(len(data.fans[team]), 'fan')}"
         )
     most = max(data.teams, key=lambda t: len(data.fans[t]))
-    parts = [_podium(data), "```\n" + "\n".join(lines) + "\n```"]
-    extras = [f"👑 Biggest fanbase: **{most}** ({len(data.fans[most])} fans)"]
+    lines.append(f"\n👑 Biggest fanbase: **{most}** ({_plural(len(data.fans[most]), 'fan')})")
     if my_teams:
-        extras.append("`>` your team 💛")
-    parts.append(" · ".join(extras))
+        lines.append("💛 your team")
 
-    embed = discord.Embed(title=title, description="\n".join(parts)[:4096], color=discord.Color.gold())
+    embed = discord.Embed(title=title, description="\n".join(lines)[:4096], color=discord.Color.gold())
     if recap:
         embed.add_field(name="This matchday", value="\n".join(recap)[:1024], inline=False)
-    embed.set_footer(text=f"{len(data.teams)} teams · {len(data.ranked)} fans · {RULES}")
+    embed.set_footer(text=f"{_plural(len(data.teams), 'team')} · {_plural(len(data.ranked), 'fan')} · {RULES}")
     return embed
 
 
 def fans_embed(data: LeagueData, page: int = 0, viewer_id: int | None = None) -> discord.Embed:
     rows = data.ranked[page * PAGE_SIZE:(page + 1) * PAGE_SIZE]
-    header = f" {'#':>2} {'Fan':<{NAME_WIDTH}} {'Team':<{TEAM_WIDTH}} {'P':>2} {'Pts':>3}"
-    lines = [header, "─" * len(header)]
-    viewer_here = False
-    previous_team = None
-    for pos, member, team, record in rows:
-        if previous_team is not None and team != previous_team:
-            lines.append("")  # small gap between teams
-        previous_team = team
-        mark = " "
-        if member.id == viewer_id:
-            mark, viewer_here = ">", True
-        lines.append(
-            f"{mark}{pos:>2} {_fan_name(member):<{NAME_WIDTH}} "
-            f"{_fit(team, TEAM_WIDTH) or team[:TEAM_WIDTH]:<{TEAM_WIDTH}} {record['played']:>2} {points(record):>3}"
+    blocks = []
+    for team, group in itertools.groupby(rows, key=lambda row: row[2]):
+        group = list(group)
+        position, _, _, record = group[0]
+        names = ", ".join(
+            f"{member.mention} 💛" if member.id == viewer_id else member.mention
+            for _, member, _, _ in group
         )
-    parts = ["Every fan shares their team's position.", "```\n" + "\n".join(lines) + "\n```"]
-    if viewer_here:
-        parts.append("`>` that's you 💛")
+        blocks.append(f"{_rank(position)} **{team}** · {points(record)} pts\n{names}")
+    description = "Every fan shares their team's position.\n\n" + "\n\n".join(blocks)
     embed = discord.Embed(
-        title=f"👥 {LEAGUE_NAME} · Fans", description="\n".join(parts)[:4096], color=discord.Color.gold()
+        title=f"👥 {LEAGUE_NAME} · Fans", description=description[:4096], color=discord.Color.gold()
     )
-    embed.set_footer(text=f"Page {page + 1}/{data.pages} · {len(data.ranked)} fans · {RULES}")
+    embed.set_footer(text=f"Page {page + 1}/{data.pages} · {_plural(len(data.ranked), 'fan')} · {RULES}")
     return embed
 
 
@@ -142,8 +100,8 @@ def team_embed(data: LeagueData, team: str) -> discord.Embed:
     description = (
         f"**{points(r)} pts** · {r['played']}P {r['won']}W {r['draw']}D {r['lost']}L · GD {r['gd']:+}\n"
         f"Playing in {r.get('competition') or 'their league'}\n\n"
-        f"All {len(fans)} {team} fan{'s' if len(fans) != 1 else ''} sit at **#{data.team_position(team)}** "
-        f"in the {LEAGUE_NAME}."
+        + (f"The only {team} fan sits" if len(fans) == 1 else f"All {len(fans)} {team} fans sit")
+        + f" at **#{data.team_position(team)}** in the {LEAGUE_NAME}."
     )
     embed = discord.Embed(title=f"⚽ {team} fans", description=description, color=discord.Color.gold())
     mentions = ", ".join(m.mention for m in fans)
