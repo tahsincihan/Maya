@@ -1,3 +1,5 @@
+import asyncio
+import re
 import unicodedata
 from datetime import datetime
 
@@ -112,14 +114,20 @@ def _format_fixture_line(match: dict, guild: discord.Guild) -> str:
 
 
 async def _fetch_football_data(url: str, token: str) -> dict:
+    """GET from football-data.org. Waits and retries when the free plan's 10-requests-a-minute limit is hit."""
     headers = {"X-Auth-Token": token}
     timeout = aiohttp.ClientTimeout(total=15)
     async with aiohttp.ClientSession(headers=headers, timeout=timeout) as session:
-        async with session.get(url) as response:
-            if response.status != 200:
+        for attempt in range(3):
+            async with session.get(url) as response:
+                if response.status == 200:
+                    return await response.json()
                 details = await response.text()
-                raise RuntimeError(f"API error {response.status}: {details}")
-            return await response.json()
+                if response.status != 429 or attempt == 2:
+                    raise RuntimeError(f"API error {response.status}: {details}")
+            wait = re.search(r"Wait (\d+) seconds", details)
+            await asyncio.sleep(min(int(wait.group(1)) if wait else 30, 60) + 1)
+    raise RuntimeError("API error: too many requests")
 
 
 def _format_kickoff(utc_date: str | None) -> str | None:

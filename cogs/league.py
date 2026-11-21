@@ -40,6 +40,44 @@ def _save_state(state: dict) -> None:
         json.dump(state, handle, indent=2, sort_keys=True)
 
 
+def _season_games(table: list[dict]) -> int:
+    """Games each team plays in a league where everyone plays everyone home and away."""
+    return 2 * (len(table) - 1)
+
+
+def _first_games_record(team_id: int | None, matches: list[dict], limit: int) -> dict:
+    """A team's record over its first `limit` finished games, in the standings' field names."""
+    played = won = draw = lost = goals_for = goals_against = 0
+    for match in sorted(matches, key=lambda m: m.get("utcDate") or ""):
+        home = match.get("homeTeam", {}).get("id")
+        away = match.get("awayTeam", {}).get("id")
+        if team_id not in (home, away):
+            continue
+        score = match.get("score", {}).get("fullTime", {})
+        if score.get("home") is None or score.get("away") is None:
+            continue
+        mine, theirs = (score["home"], score["away"]) if team_id == home else (score["away"], score["home"])
+        played += 1
+        goals_for += mine
+        goals_against += theirs
+        if mine > theirs:
+            won += 1
+        elif mine == theirs:
+            draw += 1
+        else:
+            lost += 1
+        if played == limit:
+            break
+    return {
+        "playedGames": played,
+        "won": won,
+        "draw": draw,
+        "lost": lost,
+        "goalsFor": goals_for,
+        "goalDifference": goals_for - goals_against,
+    }
+
+
 def _team_records(guild: discord.Guild, standings: list[dict]) -> dict[str, dict]:
     """Season record for each tracked team that has a role with members in this guild."""
     records = {}
@@ -58,6 +96,7 @@ def _team_records(guild: discord.Guild, standings: list[dict]) -> dict[str, dict
             "gd": row.get("goalDifference", 0),
             "gf": row.get("goalsFor", 0),
             "competition": row.get("competition", ""),
+            "cap": row.get("cap"),
         }
     return records
 
@@ -180,11 +219,31 @@ class LeagueCog(commands.Cog):
 
     async def _fetch_standings(self, token: str) -> list[dict]:
         rows = []
+        season_games = {}
         for code, name in COMPETITIONS.items():
             payload = await _fetch_football_data(f"{FOOTBALL_DATA_BASE_URL}/competitions/{code}/standings", token)
             for standing in payload.get("standings", []):
                 if standing.get("type") == "TOTAL":
-                    rows.extend({**row, "competition": name} for row in standing.get("table", []))
+                    table = standing.get("table", [])
+                    season_games[code] = _season_games(table)
+                    rows.extend({**row, "competition": name, "competition_code": code} for row in table)
+
+        # Every team counts the same number of games: the length of the shortest season among our teams' leagues.
+        tracked = [r for r in rows if any(_matches_role_name(t, r.get("team", {})) for t in FOOTBALL_TEAMS)]
+        cap = min((season_games[r["competition_code"]] for r in tracked), default=0) or None
+        finished: dict[str, list[dict]] = {}
+        for row in tracked:
+            if cap is None or row.get("playedGames", 0) <= cap:
+                continue
+            code = row["competition_code"]
+            if code not in finished:
+                payload = await _fetch_football_data(
+                    f"{FOOTBALL_DATA_BASE_URL}/competitions/{code}/matches?status=FINISHED", token
+                )
+                finished[code] = payload.get("matches", [])
+            row.update(_first_games_record(row.get("team", {}).get("id"), finished[code], cap))
+        for row in rows:
+            row["cap"] = cap
         return rows
 
     async def _get_standings(self, max_age: float = STANDINGS_MAX_AGE) -> list[dict]:

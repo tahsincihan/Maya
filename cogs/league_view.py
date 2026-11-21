@@ -67,6 +67,12 @@ class LeagueData:
             key=lambda t: (-points(records[t]), -records[t]["gd"], -records[t]["gf"], t),
         )
         self.pages = max(1, math.ceil(len(ranked) / PAGE_SIZE))
+        # Games that count per team this season (the shortest season among the leagues).
+        self.cap = next((r["cap"] for r in records.values() if r.get("cap")), None)
+
+    @property
+    def rules(self) -> str:
+        return f"{RULES} · first {self.cap} games count" if self.cap else RULES
 
     def rows_for(self, member_id: int) -> list[tuple[int, tuple]]:
         """(index in table, row) for each of this member's entries."""
@@ -112,7 +118,7 @@ def teams_embed(
     embed = discord.Embed(title=title, description="\n".join(parts)[:4096], color=discord.Color.gold())
     if recap:
         embed.add_field(name="This matchday", value="\n".join(recap)[:1024], inline=False)
-    embed.set_footer(text=f"{_plural(len(data.teams), 'team')} · {_plural(len(data.ranked), 'fan')} · {RULES}")
+    embed.set_footer(text=f"{_plural(len(data.teams), 'team')} · {_plural(len(data.ranked), 'fan')} · {data.rules}")
     return embed
 
 
@@ -136,7 +142,7 @@ def fans_embed(data: LeagueData, page: int = 0, viewer_id: int | None = None) ->
     embed = discord.Embed(
         title=f"👥 {LEAGUE_NAME} · Fans", description="\n".join(parts)[:4096], color=discord.Color.gold()
     )
-    embed.set_footer(text=f"Page {page + 1}/{data.pages} · {_plural(len(data.ranked), 'fan')} · {RULES}")
+    embed.set_footer(text=f"Page {page + 1}/{data.pages} · {_plural(len(data.ranked), 'fan')} · {data.rules}")
     return embed
 
 
@@ -145,7 +151,9 @@ def team_embed(data: LeagueData, team: str) -> discord.Embed:
     fans = data.fans[team]
     description = (
         f"**{points(r)} pts** · {r['played']}P {r['won']}W {r['draw']}D {r['lost']}L · GD {r['gd']:+}\n"
-        f"Playing in {r.get('competition') or 'their league'}\n\n"
+        f"Playing in {r.get('competition') or 'their league'}"
+        + (f" · {r['played']}/{data.cap} games counted" if data.cap else "")
+        + "\n\n"
         + (f"The only {team} fan sits" if len(fans) == 1 else f"All {len(fans)} {team} fans sit")
         + f" at **#{data.team_position(team)}** in the {LEAGUE_NAME}."
     )

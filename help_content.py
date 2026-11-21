@@ -62,7 +62,7 @@ HELP_TIPS = {
     "fixtures": "Each match has an ID — use it with `!predict`.",
     "predict": "Pick `home`, `away` or `draw`. 2 points for each correct guess.",
     "leaderboard": "Only finished matches count.",
-    "league": "You score whatever your team scores in its real league this season: win 3, draw 1, loss 0. Get a team role to join.",
+    "league": "You score whatever your team scores in its real league this season: win 3, draw 1, loss 0. Leagues have different lengths, so every team only counts its first 34 games (the shortest season). Get a team role to join.",
     "leaguetable": "Needs Manage Server. Maya posts the table and pins it, then edits it after every matchday and posts a short recap. Its buttons keep working and open a private copy for whoever clicks. `refresh` updates it now, `off` stops updates.",
     "lovetest": "Maya compares your roles, custom status, recent chat in that channel, profiles, what you're doing right now and join dates, then explains her score. Mention just one person to test them with you.",
     "sendto": "Needs Manage Server. Type it in your admin channel and Maya posts the result in the channel you pick. Works with lovetest, match, rizz, date, flirtwith, couples, coupleoftheday, fact, allabout, hi_maya, whatsup_maya and banter. Any errors stay in the admin channel.",
