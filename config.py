@@ -12,6 +12,21 @@ FOOTBALL_TEAMS = [
     "Atlético Madrid",
 ]
 
+# 3-letter codes for the league table, so it fits on a phone screen.
+TEAM_CODES = {
+    "Man United": "MUN",
+    "Bayern Munich": "BAY",
+    "Real Madrid": "RMA",
+    "Juventus": "JUV",
+    "Barcelona": "BAR",
+    "Liverpool": "LIV",
+    "Arsenal": "ARS",
+    "Man City": "MCI",
+    "Chelsea": "CHE",
+    "PSG": "PSG",
+    "Atlético Madrid": "ATM",
+}
+
 FOOTBALL_DATA_BASE_URL = "https://api.football-data.org/v4"
 PREMIER_LEAGUE_CODE = "PL"
 PREDICTIONS_FILE = "predictions.json"
