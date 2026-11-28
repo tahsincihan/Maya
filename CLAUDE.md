@@ -48,7 +48,7 @@ Shared config (football team list, competition codes/aliases, file paths) lives 
 
 ## Configuration
 
-The `FOOTBALL_TEAMS` list, competition codes/aliases, and predictions file paths are in `config.py`. To add/remove supported teams, edit that list.
+The `FOOTBALL_TEAMS` list, competition codes/aliases, and predictions file paths are in `config.py`. To add/remove supported teams, edit that list (and give new teams a 3-letter code in `TEAM_CODES` for the league table).
 
 ## Discord Setup Requirements
 
